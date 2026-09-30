@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+.DS_Store
+.ipynb_checkpoints/
+
+# MLflow
+mlflow.db
+mlruns/
+mlartifacts/
+
+# Data, models, generated files
+data/
+db/
+models/
+outputs/*.csv
+logs/
