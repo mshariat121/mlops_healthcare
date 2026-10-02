@@ -14,3 +14,6 @@ db/
 models/
 outputs/*.csv
 logs/
+
+# Local DVC storage (the remote is S3)
+dvc-storage/

@@ -10,53 +10,35 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    env:
-      AWS_REGION: us-east-1
-      AWS_DEFAULT_REGION: us-east-1
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Same Python version the models were trained with
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
+          cache: pip
 
+      # Only what the tests need: the API runtime + pytest + DVC with S3 support
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest httpx "dvc[s3]" awscli
+          pip install -r requirements-api.txt pytest httpx "dvc[s3]"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-region: us-east-2
 
-      - name: Debug AWS access
+      # Download only the model files the tests need, not the training data
+      - name: Pull model artifacts
         run: |
-          echo "AWS_REGION=$AWS_REGION"
-          echo "AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION"
-          aws configure list
-          aws sts get-caller-identity
-          aws s3 ls s3://amzn-s3-healthcare
-          aws s3 ls s3://amzn-s3-healthcare/dvc-store/ --recursive | head
+          dvc pull models/risk_model_complete_pipeline.joblib models/claim_model_complete_pipeline.joblib
 
-      - name: Pull DVC artifacts
+      - name: Run tests
         run: |
-          dvc pull -v
-
-      - name: Run API tests
-        run: |
-          python -m pytest tests/test_routes.py -v
-
-      - name: Run feature schema tests
-        run: |
-          python -m pytest tests/test_schema.py -v
-
-      - name: Run model artifact tests
-        run: |
-          python -m pytest tests/test_artifacts.py -v
+          pytest -v
