@@ -2,6 +2,7 @@ import os
 import json
 import hashlib
 import joblib
+import numpy as np
 import pandas as pd
 from datetime import datetime
 
@@ -75,6 +76,40 @@ def save_feature_schema_full(config_dict: dict) -> str:
         json.dump(schema, f, indent=4)
 
     return schema_path
+
+
+# Save Feature Baseline
+def save_feature_baseline(X_train: pd.DataFrame, numeric_features: list, bins: int = 10) -> str:
+    """
+    Saves the training distribution (bin edges + proportions) of each numeric feature.
+    The drift monitor compares production inputs against this baseline using PSI.
+    Existing entries are kept, so the risk and claim pipelines can share one file.
+    """
+
+    base_dir = get_base_dir()
+    output_dir = os.path.join(base_dir, "outputs")
+    os.makedirs(output_dir, exist_ok=True)
+
+    baseline_path = os.path.join(output_dir, "feature_baseline.json")
+
+    baseline = {}
+    if os.path.exists(baseline_path):
+        with open(baseline_path, "r", encoding="utf-8") as f:
+            baseline = json.load(f)
+
+    for feature in numeric_features:
+        values = X_train[feature].dropna()
+        counts, bin_edges = np.histogram(values, bins=bins)
+
+        baseline[feature] = {
+            "bin_edges": bin_edges.round(6).tolist(),
+            "distribution": (counts / counts.sum()).round(6).tolist()
+        }
+
+    with open(baseline_path, "w", encoding="utf-8") as f:
+        json.dump(baseline, f, indent=4)
+
+    return baseline_path
 
 
 # This function loads the feature schema JSON file from the outputs directory.

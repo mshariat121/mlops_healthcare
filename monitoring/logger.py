@@ -34,7 +34,8 @@ def log_prediction(model_name: str, model_version: str, input_data: dict, predic
         "model_name": model_name,
         "model_version": model_version,
         "input_hash": generate_input_hash(input_data),
+        "input_data": input_data,
         "prediction": prediction
     }
 
-    logger.info(json.dumps(log_entry))
+    logger.info(json.dumps(log_entry, default=str))

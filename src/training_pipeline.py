@@ -10,6 +10,7 @@ from src.utils import (
     load_model_table,
     time_based_split,
     save_feature_schema_full,
+    save_feature_baseline,
     save_local_model,
     hash_input,
     write_prediction_log
@@ -75,6 +76,10 @@ def run_pipeline(model_type: str):
     # Step 8: Save raw feature schema
     schema_path = save_feature_schema_full(MODEL_CONFIG)
     print("Feature schema saved at:", schema_path)
+
+    # Step 8b: Save training distribution baseline for drift monitoring
+    baseline_path = save_feature_baseline(X_train, config["numeric_features"])
+    print("Feature baseline saved at:", baseline_path)
 
     # Step 9: Predict on test data
     predictions = pipeline.predict(X_test)

@@ -1,0 +1,29 @@
+# Local environment and caches
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
+
+# Version control and DVC storage
+.git/
+.dvc/
+dvc-storage/
+
+# MLflow tracking data (the API loads models from models/, not from MLflow)
+mlflow.db
+mlruns/
+mlartifacts/
+
+# Data and notebooks are not needed at runtime
+data/
+db/
+notebooks/
+outputs/*.csv
+logs/
+reports/
+tests/
+
+# Old notebook models; the API only loads the *_complete_pipeline.joblib files
+models/risk_model.joblib
+models/claim_model.joblib

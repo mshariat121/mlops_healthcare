@@ -80,7 +80,10 @@ def build_actual_distribution(values: List[float], bin_edges: List[float]) -> Li
     if not values:
         raise ValueError("No production values available for distribution calculation")
 
-    counts, _ = np.histogram(values, bins=bin_edges)
+    # Clip into the training range so out-of-range values count in the edge bins
+    # instead of being silently dropped by np.histogram
+    clipped = np.clip(values, bin_edges[0], bin_edges[-1])
+    counts, _ = np.histogram(clipped, bins=bin_edges)
     total = counts.sum()
 
     if total == 0:
